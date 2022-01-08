@@ -1,5 +1,10 @@
+import collections
 import csv
+import itertools
+import random
+
 import matplotlib.pyplot as plt
+import numpy
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -54,32 +59,92 @@ def GaussProbabilityCalc(x, mean, dev):
     return (1 / (math.sqrt(2*math.pi) * dev )) * ex
 
 def CalsClasProb(summ, row):
-    all_rows = sum([summ[label]][0][2] for label in summ)
+    all_rows = sum([summ[label][0][2] for label in summ])
     probs = dict()
     for res, class_summ in summ.items():
         probs[res] = summ[res][0][2]/float(all_rows)
         for i in range(len(class_summ)):
             mean, dev, count = class_summ[i]
+            if dev == 0:
+                continue
             probs[res] *= GaussProbabilityCalc(row[i], mean, dev)
     return probs
 
+def CheckClass(probs):
+    if probs[0] > probs[1]:
+        return 0
+    else :
+        return 1
+
+def CalcNodeCaps(subset):
+    counter = 0
+    for s in subset :
+        if s[5] == 0 :
+            counter+=1
+    return counter
+
 
 if __name__ == '__main__':
-    #plt.figure(figsize=(20, 8))
+
     df = pd.read_csv("./breast-cancer_cleaned_data.csv", delimiter=";", header=1).to_numpy()
-    # print(df.dtypes)
-    #for c in df :
-    #    print(df[c].value_counts(dropna=False))
-    #print(summarize_dataset(df))
-    summary = SummByClass(df)
-    probs = CalsClasProb(summary, df[0])
-    print(probs)
+
+    #Startify k-fold cross validation
+    #12 krotne losowanie
+    AccAll:float = 0
+    for x in range(0,12):
+        K = 12
+        SubSets:list = []
+        HowManyElements = int(len(df)/K)
+        ncz:list = []
+        nco:list = []
+
+        for n in df :
+            if n[5]==0:
+                ncz.append(n)
+            else :
+               nco.append(n)
 
 
 
-    #print(df.head())
-    #hm = sns.heatmap(df.corr(), annot=True)
-    #hm.set_title('Correlation Heatmap', fontdict={'fontsize': 12}, pad=12)
-    #plt.savefig('heatmap.png', dpi=300, bbox_inches='tight')
+
+        for ssf in range(0,K-1):
+            SubSet:list = []
+            for ssvz in range(0,18):
+                    index = random.choice(range(len(ncz)))
+                    SubSet.append(ncz[index-1])
+                    ncz.pop(index)
+            for ssvo in range(0,5):
+                index = random.choice(range(len(nco)))
+                SubSet.append(nco[index-1])
+                nco.pop(index)
+            SubSets.append(SubSet)
+
+        SubSets.append(nco+ncz)
+
+
+
+
+        ArrayTeaching:list = list(itertools.chain(*SubSets[0:10]))
+        ArrayTest:list = SubSets[11]
+        summary = SummByClass(np.array(ArrayTeaching))
+        OK:int = 0
+        AtALL:int = 0
+        for n in range(0,len(np.array(ArrayTest))):
+            probs = CalsClasProb(summary, ArrayTest[n])
+            if(CheckClass(probs) == np.array(ArrayTest)[n][0]) :
+                OK +=1;
+            AtALL+=1;
+
+        AccAll += OK/AtALL;
+
+    AccAll /= 12
+    print("Accuracy : " + str(AccAll*100))
+
+
+
+
+
+
+
 
 
