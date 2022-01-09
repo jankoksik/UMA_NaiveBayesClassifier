@@ -11,6 +11,7 @@ import numpy as np
 import math
 import sklearn
 from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.metrics import roc_curve, auc
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -101,6 +102,8 @@ class ConfusionMatrix:
         self.FP = FP
         self.TN = TN
 
+
+
     def AddTP(self):
         self.TP+=1
     def AddFN(self):
@@ -129,6 +132,7 @@ class ConfusionMatrix:
 
     def CalculateDiscriminantPower(self):
         result = 3 * math.pi * (math.log() + math.log())
+
 
     # DP = 3 ( (TPR1-TNR) + (TNR1-TPR))
 
@@ -195,9 +199,10 @@ if __name__ == '__main__':
 
         #Gausian Naive Bayes Clasifier
         summary = SummByClass(np.array(ArrayTeaching))
-
+        AllResultsGNGC:list = []
         for n in range(0,len(np.array(ArrayTest))):
             probs = CalsClasProb(summary, ArrayTest[n])
+            AllResultsGNGC.append(CheckClass(probs))
             if(CheckClass(probs) == np.array(ArrayTest)[n][0]) :
                 if CheckClass(probs) == 0:
                     ConfMatrixGNBC.AddTN()
@@ -208,12 +213,15 @@ if __name__ == '__main__':
                     ConfMatrixGNBC.AddFN()
                 if CheckClass(probs) == 1:
                     ConfMatrixGNBC.AddFP()
-
+        FprGNGC, TprGNGC, thresholds = roc_curve(sliceTestY, AllResultsGNGC, pos_label=1)
+        roc_aucGNGC = auc(FprGNGC, TprGNGC)
 
         # Logic Regression
         logreg = LogisticRegression()
         logreg.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
         LR_ResultPrediction = logreg.predict(sliceTestX)
+        FprLR, TprLR, thresholds  = roc_curve(sliceTestY, LR_ResultPrediction, pos_label=1)
+        roc_aucLR = auc( FprLR, TprLR)
         for i in range(0, len(LR_ResultPrediction)) :
             if LR_ResultPrediction[i] == sliceTestY[i] :
                 if LR_ResultPrediction[i] == 0:
@@ -230,6 +238,8 @@ if __name__ == '__main__':
         KnNeigh = KNeighborsClassifier()
         KnNeigh.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
         KN_ResultPrediction = KnNeigh.predict(sliceTestX)
+        FprKN, TprKN, thresholds = roc_curve(sliceTestY, KN_ResultPrediction, pos_label=1)
+        roc_aucKN = auc(FprKN, TprKN)
         for i in range(0, len(KN_ResultPrediction)):
             if KN_ResultPrediction[i] == sliceTestY[i]:
                 if KN_ResultPrediction[i] == 0:
@@ -246,6 +256,8 @@ if __name__ == '__main__':
         DecTree = DecisionTreeClassifier()
         DecTree.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
         DT_ResultPrediction = DecTree.predict(sliceTestX)
+        FprDT, TprDT, thresholds = roc_curve(sliceTestY, DT_ResultPrediction, pos_label=1)
+        roc_aucDT = auc(FprDT, TprDT)
         for i in range(0, len(DT_ResultPrediction)):
             if DT_ResultPrediction[i] == sliceTestY[i]:
                 if DT_ResultPrediction[i] == 0:
@@ -262,6 +274,8 @@ if __name__ == '__main__':
         svc = SVC()
         svc.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
         SVC_ResultPrediction = svc.predict(sliceTestX)
+        FprSVC, TprSVC, thresholds = roc_curve(sliceTestY, SVC_ResultPrediction, pos_label=1)
+        roc_aucSVC = auc(FprSVC, TprSVC)
         for i in range(0, len(SVC_ResultPrediction)):
             if SVC_ResultPrediction[i] == sliceTestY[i]:
                 if SVC_ResultPrediction[i] == 0:
@@ -278,6 +292,8 @@ if __name__ == '__main__':
         RFC = RandomForestClassifier()
         RFC.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
         RFC_ResultPrediction = RFC.predict(sliceTestX)
+        FprRFC, TprRFC, thresholds = roc_curve(sliceTestY, RFC_ResultPrediction, pos_label=1)
+        roc_aucRFC = auc(FprRFC, TprRFC)
         for i in range(0, len(RFC_ResultPrediction)):
             if RFC_ResultPrediction[i] == sliceTestY[i]:
                 if RFC_ResultPrediction[i] == 0:
@@ -299,6 +315,26 @@ if __name__ == '__main__':
     print("DT Acc : " + str(ConfMatrixDT.CalculateAccuracy() * 100))
     print("SVC Acc : " + str(ConfMatrixSVM.CalculateAccuracy() * 100))
     print("RF Acc : " + str(ConfMatrixRF.CalculateAccuracy() * 100))
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    plt.plot(FprGNGC, TprGNGC, label='ROC Curve GNBC (AUC = %0.2f)' % (roc_aucGNGC), alpha=0.7)
+    plt.plot(FprLR, TprLR, label='ROC Curve LRC (AUC = %0.2f)' % (roc_aucLR), alpha=0.7)
+    plt.plot(FprKN, TprKN, label='ROC Curve KNC (AUC = %0.2f)' % (roc_aucKN), alpha=0.7)
+    plt.plot(FprDT, TprDT, label='ROC Curve DTC (AUC = %0.2f)' % (roc_aucDT), alpha=0.7)
+    plt.plot(FprSVC, TprSVC, label='ROC Curve SVC (AUC = %0.2f)' % (roc_aucSVC), alpha=0.7)
+    plt.plot(FprRFC, TprRFC, label='ROC Curve RFC (AUC = %0.2f)' % (roc_aucRFC), alpha=0.7)
+
+    plt.plot([0, 1], [0, 1], linestyle='--', color='red', label='Random Classifier')
+    plt.plot([0, 0, 1], [0, 1, 1], linestyle=':', color='green', label='Perfect Classifier')
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False positive rate')
+    plt.ylabel('True positive rate')
+    plt.legend(loc="lower right")
+    plt.show()
+
+
 
 
 
