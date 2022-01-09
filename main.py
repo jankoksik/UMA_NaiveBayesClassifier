@@ -309,12 +309,12 @@ if __name__ == '__main__':
 
     #print(ConfMatrixGNBC)
     #print(ConfMatrixLR)
-    print("GNBC Acc : " + str(ConfMatrixGNBC.CalculateAccuracy() * 100))
-    print("LR Acc : " + str(ConfMatrixLR.CalculateAccuracy() * 100))
-    print("KN Acc : " + str(ConfMatrixKN.CalculateAccuracy() * 100))
-    print("DT Acc : " + str(ConfMatrixDT.CalculateAccuracy() * 100))
-    print("SVC Acc : " + str(ConfMatrixSVM.CalculateAccuracy() * 100))
-    print("RF Acc : " + str(ConfMatrixRF.CalculateAccuracy() * 100))
+    print("GNBC Acc : " + str(round(ConfMatrixGNBC.CalculateAccuracy() * 100, 2)) + "%")
+    print(" LR  Acc : " + str(round(ConfMatrixLR.CalculateAccuracy() * 100,2)) + "%")
+    print(" KN  Acc : " + str(round(ConfMatrixKN.CalculateAccuracy() * 100,2)) + "%")
+    print(" DT  Acc : " + str(round(ConfMatrixDT.CalculateAccuracy() * 100,2)) + "%")
+    print("SVC  Acc : " + str(round(ConfMatrixSVM.CalculateAccuracy() * 100,2)) + "%")
+    print(" RF  Acc : " + str(round(ConfMatrixRF.CalculateAccuracy() * 100,2)) + "%")
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
