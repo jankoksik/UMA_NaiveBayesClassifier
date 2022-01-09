@@ -9,7 +9,12 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import math
-
+import sklearn
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 
 # recurrence-events - 1 | no-recurrence-events - 0
 # 10-19 - 1 | 0-29 -2 | 30-39 - 3 | 40-49 - 4 | 50-59 - 5 |  60-69 - 6 | 70-79 - 7 | 80-89 - 8|  90-99 -9
@@ -23,6 +28,9 @@ import math
 
 # returns dictionary
 # splits records by values (has cancer or no)
+import sklearn as sklearn
+
+
 def SeperateByResult(ds):
     seperated = dict()
     for i in range(len(ds)):
@@ -83,14 +91,68 @@ def CalcNodeCaps(subset):
             counter+=1
     return counter
 
+def GetColumnValues(matrix, i):
+    return [row[i] for row in matrix]
+
+class ConfusionMatrix:
+    def __init__(self, TP, FN, FP, TN):
+        self.TP = TP
+        self.FN = FN
+        self.FP = FP
+        self.TN = TN
+
+    def AddTP(self):
+        self.TP+=1
+    def AddFN(self):
+        self.FN+=1
+    def AddFP(self):
+        self.FP+=1
+    def AddTN(self):
+        self.TN+=1
+    def __str__(self):
+        return "[ " + str(self.TP) + ", " + str(self.FP) + "] \n[" + str(self.FN) + ", " + str(self.TN) + "]\n"
+
+    def CalculateSensitivity(self):
+        return self.TP / (self.TP + self.FN)
+
+    def CalculateSpecificity(self):
+        return self.TN / (self.FP + self.TN)
+
+    def CalculateAccuracy(self):
+        return (self.TP + self.TN) / (self.TP + self.FN + self.FP + self.TN)
+
+    def CalculatePositivePredictiveValue(self):
+        return self.TP / (self.TP + self.FP)
+
+    def CalculateYoudenIndex(self,Sensitivity, Specificity):
+        return Sensitivity + Specificity - 1
+
+    def CalculateDiscriminantPower(self):
+        result = 3 * math.pi * (math.log() + math.log())
+
+    # DP = 3 ( (TPR1-TNR) + (TNR1-TPR))
+
+    def GenerateROCCurve(self):
+        print("jjjj")
+
+    def CalculateAUC(self):
+        print("jjjj")
+
 
 if __name__ == '__main__':
 
     df = pd.read_csv("./breast-cancer_cleaned_data.csv", delimiter=";", header=1).to_numpy()
 
+    #Confusion Matrix
+    ConfMatrixGNBC:ConfusionMatrix = ConfusionMatrix(0,0,0,0)
+    ConfMatrixLR:ConfusionMatrix = ConfusionMatrix(0,0,0,0)
+    ConfMatrixKN: ConfusionMatrix = ConfusionMatrix(0, 0, 0, 0)
+    ConfMatrixDT: ConfusionMatrix = ConfusionMatrix(0, 0, 0, 0)
+    ConfMatrixSVM: ConfusionMatrix = ConfusionMatrix(0, 0, 0, 0)
+    ConfMatrixRF: ConfusionMatrix = ConfusionMatrix(0, 0, 0, 0)
+
     #Startify k-fold cross validation
     #12 krotne losowanie
-    AccAll:float = 0
     for x in range(0,12):
         K = 12
         SubSets:list = []
@@ -123,22 +185,121 @@ if __name__ == '__main__':
 
 
 
-
+        # Spliting data for testing and teaching
         ArrayTeaching:list = list(itertools.chain(*SubSets[0:10]))
         ArrayTest:list = SubSets[11]
+        sliceTeachX = [ArrayTeaching[i][1:] for i in range(0, len(ArrayTeaching))]
+        sliceTestX = [ArrayTest[i][1:] for i in range(0, len(ArrayTest))]
+        sliceTestY = [ArrayTest[i][0:1] for i in range(0, len(ArrayTest))]
+
+
+        #Gausian Naive Bayes Clasifier
         summary = SummByClass(np.array(ArrayTeaching))
-        OK:int = 0
-        AtALL:int = 0
+
         for n in range(0,len(np.array(ArrayTest))):
             probs = CalsClasProb(summary, ArrayTest[n])
             if(CheckClass(probs) == np.array(ArrayTest)[n][0]) :
-                OK +=1;
-            AtALL+=1;
+                if CheckClass(probs) == 0:
+                    ConfMatrixGNBC.AddTN()
+                if CheckClass(probs) == 1:
+                    ConfMatrixGNBC.AddTP()
+            else :
+                if CheckClass(probs) == 0:
+                    ConfMatrixGNBC.AddFN()
+                if CheckClass(probs) == 1:
+                    ConfMatrixGNBC.AddFP()
 
-        AccAll += OK/AtALL;
 
-    AccAll /= 12
-    print("Accuracy : " + str(AccAll*100))
+        # Logic Regression
+        logreg = LogisticRegression()
+        logreg.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
+        LR_ResultPrediction = logreg.predict(sliceTestX)
+        for i in range(0, len(LR_ResultPrediction)) :
+            if LR_ResultPrediction[i] == sliceTestY[i] :
+                if LR_ResultPrediction[i] == 0:
+                    ConfMatrixLR.AddTN()
+                if LR_ResultPrediction[i] == 1:
+                    ConfMatrixLR.AddTP()
+            else:
+                if LR_ResultPrediction[i] == 0:
+                    ConfMatrixLR.AddFN()
+                if LR_ResultPrediction[i] == 1:
+                    ConfMatrixLR.AddFP()
+
+        # KNearest Neighbour
+        KnNeigh = KNeighborsClassifier()
+        KnNeigh.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
+        KN_ResultPrediction = KnNeigh.predict(sliceTestX)
+        for i in range(0, len(KN_ResultPrediction)):
+            if KN_ResultPrediction[i] == sliceTestY[i]:
+                if KN_ResultPrediction[i] == 0:
+                    ConfMatrixKN.AddTN()
+                if KN_ResultPrediction[i] == 1:
+                    ConfMatrixKN.AddTP()
+            else:
+                if KN_ResultPrediction[i] == 0:
+                    ConfMatrixKN.AddFN()
+                if KN_ResultPrediction[i] == 1:
+                    ConfMatrixKN.AddFP()
+
+        # Decision Tree Classifier
+        DecTree = DecisionTreeClassifier()
+        DecTree.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
+        DT_ResultPrediction = DecTree.predict(sliceTestX)
+        for i in range(0, len(DT_ResultPrediction)):
+            if DT_ResultPrediction[i] == sliceTestY[i]:
+                if DT_ResultPrediction[i] == 0:
+                    ConfMatrixDT.AddTN()
+                if DT_ResultPrediction[i] == 1:
+                    ConfMatrixDT.AddTP()
+            else:
+                if DT_ResultPrediction[i] == 0:
+                    ConfMatrixDT.AddFN()
+                if DT_ResultPrediction[i] == 1:
+                    ConfMatrixDT.AddFP()
+
+        # Support Vector Machine Model
+        svc = SVC()
+        svc.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
+        SVC_ResultPrediction = svc.predict(sliceTestX)
+        for i in range(0, len(SVC_ResultPrediction)):
+            if SVC_ResultPrediction[i] == sliceTestY[i]:
+                if SVC_ResultPrediction[i] == 0:
+                    ConfMatrixSVM.AddTN()
+                if SVC_ResultPrediction[i] == 1:
+                    ConfMatrixSVM.AddTP()
+            else:
+                if SVC_ResultPrediction[i] == 0:
+                    ConfMatrixSVM.AddFN()
+                if SVC_ResultPrediction[i] == 1:
+                    ConfMatrixSVM.AddFP()
+
+        # Random Forest Classifier
+        RFC = RandomForestClassifier()
+        RFC.fit(sliceTeachX, GetColumnValues(ArrayTeaching, 0))
+        RFC_ResultPrediction = RFC.predict(sliceTestX)
+        for i in range(0, len(RFC_ResultPrediction)):
+            if RFC_ResultPrediction[i] == sliceTestY[i]:
+                if RFC_ResultPrediction[i] == 0:
+                    ConfMatrixRF.AddTN()
+                if RFC_ResultPrediction[i] == 1:
+                    ConfMatrixRF.AddTP()
+            else:
+                if RFC_ResultPrediction[i] == 0:
+                    ConfMatrixRF.AddFN()
+                if RFC_ResultPrediction[i] == 1:
+                    ConfMatrixRF.AddFP()
+
+
+    #print(ConfMatrixGNBC)
+    #print(ConfMatrixLR)
+    print("GNBC Acc : " + str(ConfMatrixGNBC.CalculateAccuracy() * 100))
+    print("LR Acc : " + str(ConfMatrixLR.CalculateAccuracy() * 100))
+    print("KN Acc : " + str(ConfMatrixKN.CalculateAccuracy() * 100))
+    print("DT Acc : " + str(ConfMatrixDT.CalculateAccuracy() * 100))
+    print("SVC Acc : " + str(ConfMatrixSVM.CalculateAccuracy() * 100))
+    print("RF Acc : " + str(ConfMatrixRF.CalculateAccuracy() * 100))
+
 
 
 
