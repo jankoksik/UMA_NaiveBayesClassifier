@@ -130,17 +130,9 @@ class ConfusionMatrix:
     def CalculateYoudenIndex(self,Sensitivity, Specificity):
         return Sensitivity + Specificity - 1
 
-    def CalculateDiscriminantPower(self):
-        result = 3 * math.pi * (math.log() + math.log())
+    def OurOwnScore(self):
+        return self.TP + self.TN - 3*self.FN - self.FP
 
-
-    # DP = 3 ( (TPR1-TNR) + (TNR1-TPR))
-
-    def GenerateROCCurve(self):
-        print("jjjj")
-
-    def CalculateAUC(self):
-        print("jjjj")
 
 
 if __name__ == '__main__':
@@ -309,12 +301,20 @@ if __name__ == '__main__':
 
     #print(ConfMatrixGNBC)
     #print(ConfMatrixLR)
+    print("Accuracy :")
     print("GNBC Acc : " + str(round(ConfMatrixGNBC.CalculateAccuracy() * 100, 2)) + "%")
     print(" LR  Acc : " + str(round(ConfMatrixLR.CalculateAccuracy() * 100,2)) + "%")
     print(" KN  Acc : " + str(round(ConfMatrixKN.CalculateAccuracy() * 100,2)) + "%")
     print(" DT  Acc : " + str(round(ConfMatrixDT.CalculateAccuracy() * 100,2)) + "%")
     print("SVC  Acc : " + str(round(ConfMatrixSVM.CalculateAccuracy() * 100,2)) + "%")
     print(" RF  Acc : " + str(round(ConfMatrixRF.CalculateAccuracy() * 100,2)) + "%")
+    print("\nOur Score :")
+    print("GNBC score : " + str(ConfMatrixGNBC.OurOwnScore()))
+    print(" LR  score : " + str(ConfMatrixLR.OurOwnScore()))
+    print(" KN  score : " + str(ConfMatrixKN.OurOwnScore()))
+    print(" DT  score : " + str(ConfMatrixDT.OurOwnScore()))
+    print("SVC  score : " + str(ConfMatrixSVM.OurOwnScore()))
+    print(" RF  score : " + str(ConfMatrixRF.OurOwnScore()))
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
