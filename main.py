@@ -127,11 +127,17 @@ class ConfusionMatrix:
     def CalculatePositivePredictiveValue(self):
         return self.TP / (self.TP + self.FP)
 
-    def CalculateYoudenIndex(self,Sensitivity, Specificity):
-        return Sensitivity + Specificity - 1
+    def CalculateYoudenIndex(self):
+        return self.CalculateSensitivity() + self.CalculateSpecificity() - 1
+
+    def CalculateDiscriminationPower(self):
+        return math.sqrt(3)/math.pi * (math.log(self.CalculateSensitivity()/ (1-self.CalculateSpecificity()))) + math.log(self.CalculateSpecificity() / (1-self.CalculateSensitivity()))
 
     def OurOwnScore(self):
         return self.TP + self.TN - 3*self.FN - self.FP
+
+
+
 
 
 
@@ -301,13 +307,48 @@ if __name__ == '__main__':
 
     #print(ConfMatrixGNBC)
     #print(ConfMatrixLR)
-    print("Accuracy :")
+    print("Sensitivity :")
+    print("GNBC score : " + str(round(ConfMatrixGNBC.CalculateSensitivity() * 100, 2)) + "%")
+    print(" LR  score : " + str(round(ConfMatrixLR.CalculateSensitivity()* 100, 2)) + "%")
+    print(" KN  score : " + str(round(ConfMatrixKN.CalculateSensitivity()* 100, 2)) + "%")
+    print(" DT  score : " + str(round(ConfMatrixDT.CalculateSensitivity()* 100, 2)) + "%")
+    print("SVC  score : " + str(round(ConfMatrixSVM.CalculateSensitivity()* 100, 2)) + "%")
+    print(" RF  score : " + str(round(ConfMatrixRF.CalculateSensitivity()* 100, 2)) + "%")
+    print("\nSpecifity :")
+    print("GNBC score : " +  str(round(ConfMatrixGNBC.CalculateSpecificity() * 100, 2)) + "%")
+    print(" LR  score : " +  str(round(ConfMatrixLR.CalculateSpecificity() * 100, 2)) + "%")
+    print(" KN  score : " +  str(round(ConfMatrixKN.CalculateSpecificity() * 100, 2)) + "%")
+    print(" DT  score : " +  str(round(ConfMatrixDT.CalculateSpecificity() * 100, 2)) + "%")
+    print("SVC  score : " + str(round(ConfMatrixSVM.CalculateSpecificity() * 100, 2)) + "%")
+    print(" RF  score : " +  str(round(ConfMatrixRF.CalculateSpecificity() * 100, 2)) + "%")
+    print("\nAccuracy :")
     print("GNBC Acc : " + str(round(ConfMatrixGNBC.CalculateAccuracy() * 100, 2)) + "%")
     print(" LR  Acc : " + str(round(ConfMatrixLR.CalculateAccuracy() * 100,2)) + "%")
     print(" KN  Acc : " + str(round(ConfMatrixKN.CalculateAccuracy() * 100,2)) + "%")
     print(" DT  Acc : " + str(round(ConfMatrixDT.CalculateAccuracy() * 100,2)) + "%")
     print("SVC  Acc : " + str(round(ConfMatrixSVM.CalculateAccuracy() * 100,2)) + "%")
     print(" RF  Acc : " + str(round(ConfMatrixRF.CalculateAccuracy() * 100,2)) + "%")
+    print("\nYounden's index :")
+    print("GNBC score : " + str(round(ConfMatrixGNBC.CalculateYoudenIndex()* 100, 2)) + "%")
+    print(" LR  score : " + str(round(ConfMatrixLR.CalculateYoudenIndex()* 100, 2)) + "%")
+    print(" KN  score : " + str(round(ConfMatrixKN.CalculateYoudenIndex()* 100, 2)) + "%")
+    print(" DT  score : " + str(round(ConfMatrixDT.CalculateYoudenIndex()* 100, 2)) + "%")
+    print("SVC  score : " + str(round(ConfMatrixSVM.CalculateYoudenIndex()* 100, 2)) + "%")
+    print(" RF  score : " + str(round(ConfMatrixRF.CalculateYoudenIndex()* 100, 2)) + "%")
+    print("\nPositive predictive value :")
+    print("GNBC score : " + str(round(ConfMatrixGNBC.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print(" LR  score : " + str(round(ConfMatrixLR.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print(" KN  score : " + str(round(ConfMatrixKN.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print(" DT  score : " + str(round(ConfMatrixDT.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print("SVC  score : " + str(round(ConfMatrixSVM.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print(" RF  score : " + str(round(ConfMatrixRF.CalculatePositivePredictiveValue()* 100, 2)) + "%")
+    print("\nDiscrimination power :")
+    print("GNBC score : " + str(ConfMatrixGNBC.CalculateDiscriminationPower()))
+    print(" LR  score : " + str(ConfMatrixLR.CalculateDiscriminationPower()))
+    print(" KN  score : " + str(ConfMatrixKN.CalculateDiscriminationPower()))
+    print(" DT  score : " + str(ConfMatrixDT.CalculateDiscriminationPower()))
+    print("SVC  score : " + str(ConfMatrixSVM.CalculateDiscriminationPower()))
+    print(" RF  score : " + str(ConfMatrixRF.CalculateDiscriminationPower()))
     print("\nOur Score :")
     print("GNBC score : " + str(ConfMatrixGNBC.OurOwnScore()))
     print(" LR  score : " + str(ConfMatrixLR.OurOwnScore()))
@@ -315,6 +356,7 @@ if __name__ == '__main__':
     print(" DT  score : " + str(ConfMatrixDT.OurOwnScore()))
     print("SVC  score : " + str(ConfMatrixSVM.OurOwnScore()))
     print(" RF  score : " + str(ConfMatrixRF.OurOwnScore()))
+
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
