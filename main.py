@@ -1,10 +1,7 @@
-import collections
-import csv
 import itertools
 import random
 
 import matplotlib.pyplot as plt
-import numpy
 import pandas as pd
 import seaborn as sns
 import numpy as np
